@@ -1,0 +1,46 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: task-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - task-network
+
+  db:
+    image: mysql:8.0
+    container_name: task-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: task_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: password
+      MYSQL_USER: task_user
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - task-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: task-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - task-network
+
+networks:
+  task-network:
+    driver: bridge
+
+volumes:
+  dbdata:
